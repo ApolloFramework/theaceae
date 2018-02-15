@@ -1,0 +1,554 @@
+/*
+html body div.container div.row div.col-md-3 div#sidebar.bs-sidenav.affix ul.current.nav.nav-list li.toctree-l1 a.reference.internal.nav-header
+
+ * bootstrap-sphinx.css
+ * ~~~~~~~~~~~~~~~~~~~~
+ *
+ * Sphinx stylesheet -- Bootstrap theme.
+ */
+
+/* ------------  TECH-X SPECIFIC CODE  ------------   */
+/*
+ * Customize code text color style from bootstrap.min.css.
+ */
+code {
+    background-color: #f9f2f4;
+    border-radius: 4px;
+    color: #04519b; /*Change from red #c7254e to medium blue */
+    font-size: 90%;
+    padding: 0px 0px;  /* Keep this make it look more normal */
+}
+
+blockquote {
+    border-left: 0px solid #eeeeee;
+    font-size: 12.5px;
+    margin: 0 0 20px;
+    padding: 10px 20px;
+}   
+
+
+
+/* SEK: Reducing the padding around the form box enables the */
+/* dynamic resizing to work better */
+.navbar-form {
+    border-bottom: 1px solid transparent;
+    border-top: 4px solid transparent;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 1px 0 rgba(2
+55, 255, 255, 0.1);
+    margin: 0px -15px;
+    padding: 2px 2px;
+} 
+
+/* Reducing the padding a bit */
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+/* SEK: Changing the color of the sidebar
+/* First level of nav */
+.bs-sidenav {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-top:    5px;
+  padding-bottom: 5px;
+  text-shadow: 0 1px 0 #fff;
+  background-color: #e7e5ea;
+  border-radius: 5px;
+}
+
+/* DR: Matching pre colors to sidenav colors, otherwise block grays    */
+/* clash with theme grays. Changed background from #ecf0f1 to #e7e5ea. */
+/* Changed text from #7b8a8b to #716b7a.                               */
+
+pre {
+  display: block;
+  padding: 10px;
+  margin: 0 0 10.5px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  word-break: break-all;
+  word-wrap: break-word;
+  color: #716b7a;
+  background-color: #e7e5ea;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+
+/* All levels of nav */
+.bs-sidenav .nav > li > a {
+  display: block;
+  color: #716b7a;
+  padding: 3px 3px;
+}
+.bs-sidenav .nav > li > a:hover,
+.bs-sidenav .nav > li > a:focus {
+  text-decoration: none;
+  background-color: #e5e3e9;
+  border-right: 1px solid #dbd8e0;
+}
+
+.bs-sidenav .nav > .active > a,
+.bs-sidenav .nav > .active:hover > a,
+.bs-sidenav .nav > .active:focus > a {
+  font-weight: bold;
+  color: #563d7c;
+  background-color: transparent;
+  border-right: 1px solid #563d7c;
+}
+
+.bs-sidenav .nav .nav > li > a {
+  padding-top:    2px;
+  padding-bottom: 2px;
+  padding-left: 15px;
+  font-size: 90%;
+}
+
+.bs-sidenav .nav .nav .nav > li > a {
+  padding-top:    2px;
+  padding-bottom: 2px;
+  padding-left: 25px;
+  font-size: 90%;
+}
+
+.bs-sidenav .nav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 35px;
+  font-size: 90%;
+}
+
+
+/* ------------  TECH-X SPECIFIC CODE  ------------                                              */
+/* DR: Color customization of Flatly Bootswatch theme colors follows layout style customization. */
+
+.navbar-brand {
+    float: left;
+    font-size: 19px;
+    height: 60px;
+    line-height: 21px;
+    padding: 5.5px 5px;
+}
+
+/*
+ * Reset navbar styles from overrides in:
+ * https://bitbucket.org/birkenfeld/sphinx/commits/78d8ebf76b630ab4073a7328af9d91e8123b8d96
+ */
+.navbar .container {
+  padding-top: 0;
+}
+
+.page-top {
+  top: 0px;
+}
+
+  body {
+    
+      padding-top: 60px;
+    
+  }
+  .page-top {
+    
+      top: 60px;
+    
+  }
+
+.navbar-inner {
+  padding-left:  12px !important;
+  padding-right: 12px !important;
+}
+
+
+table {
+  border: 0;
+}
+
+.highlighttable .code pre {
+    font-size: 12px;
+}
+
+.highlighttable .linenos pre {
+    word-break: normal;
+    font-size: 12px;
+}
+
+div.highlight {
+  background: none;
+}
+
+a.footnote-reference {
+  vertical-align: super;
+  font-size: 75%;
+}
+
+table.footnote td.label {
+  font-size: 100%;
+  display: block;
+  line-height: normal;
+  background: inherit;
+}
+
+table.footnote {
+  width: auto;
+  margin-bottom: 0px;
+}
+
+table.field-list {
+  width: auto;
+}
+
+.footer {
+  width: 100%;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+}
+
+.bs-sidenav form, .bs-sidenav #sourcelink {
+  padding: 5px 20px;
+}
+
+
+/* The code below is based on the bootstrap website sidebar */
+
+.bs-sidenav.affix {
+  position: static;
+}
+
+/* All levels of nav */
+.bs-sidenav .nav > li > a {
+  display: block;
+  color: #716b7a;
+  padding: 5px 20px;
+}
+
+/* DR: Added color property so the text changes from gray to green */
+/* on mouseover so the user can see what is being selected.        */
+
+.bs-sidenav .nav > li > a:hover,
+.bs-sidenav .nav > li > a:focus {
+  text-decoration: none;
+  color: #007700;
+  background-color: #e5e3e9;
+  border-right: 1px solid #dbd8e0;
+}
+
+.bs-sidenav .nav > .active > a,
+.bs-sidenav .nav > .active:hover > a,
+.bs-sidenav .nav > .active:focus > a {
+  font-weight: bold;
+  color: #563d7c;
+  background-color: transparent;
+  border-right: 1px solid #563d7c;
+}
+
+.bs-sidenav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 30px;
+  font-size: 90%;
+}
+
+.bs-sidenav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 40px;
+  font-size: 90%;
+}
+
+.bs-sidenav .nav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 50px;
+  font-size: 90%;
+}
+
+/* Show and affix the side nav when space allows it */
+@media screen and (min-width: 992px) {
+  .bs-sidenav .nav > .active > ul {
+    display: block;
+  }
+  /* Widen the fixed sidenav */
+  .bs-sidenav.affix,
+  .bs-sidenav.affix-bottom {
+    width: 213px;
+  }
+  .bs-sidenav.affix {
+    position: fixed; /* Undo the static from mobile first approach */
+  }
+  .bs-sidenav.affix-bottom {
+    position: absolute; /* Undo the static from mobile first approach */
+  }
+  .bs-sidenav.affix-bottom .bs-sidenav,
+  .bs-sidenav.affix .bs-sidenav {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+@media screen and (min-width: 1200px) {
+  /* Widen the fixed sidenav again */
+  .bs-sidenav.affix-bottom,
+  .bs-sidenav.affix {
+    width: 263px;
+  }
+}
+
+/******************************************************************************/
+/* DR: Customization of Flatly theme to green shades that match PTSolve logo. */
+/* Changed #18bc9c (sea green) to #007700 (medium green) for non-navbar text. */
+/* Changed text link hover from #18bc9c (sea green) to highlight color        */
+/* #43BB00 (acid green) in non-navbar text                                    */
+/******************************************************************************/
+
+a {
+  color: #007700;
+  text-decoration: none;
+}
+a:hover,
+a:focus {
+  color: #43BB00;
+  text-decoration: underline;
+}
+
+.bg-success {
+  background-color: #007700;
+}
+
+.table > tfoot > tr.success > th {
+  background-color: #007700;
+}
+
+.has-success .input-group-addon {
+  color: #ffffff;
+  border-color: #ffffff;
+  background-color: #007700;
+}
+
+.btn-success {
+  color: #ffffff;
+  background-color: #007700;
+  border-color: #007700;
+}
+
+fieldset[disabled] .btn-success.focus {
+  background-color: #007700;
+  border-color: #007700;
+}
+.btn-success .badge {
+  color: #007700;
+  background-color: #ffffff;
+}
+
+.btn-link {
+  color: #007700;
+  font-weight: normal;
+  border-radius: 0;
+}
+
+.btn-link:hover,
+.btn-link:focus {
+  color: #007700;
+  text-decoration: underline;
+  background-color: transparent;
+}
+
+.nav .open > a,
+.nav .open > a:hover,
+.nav .open > a:focus {
+  background-color: #ecf0f1;
+  border-color: #007700;
+}
+
+.pagination > li > a,
+.pagination > li > span {
+  position: relative;
+  float: left;
+  padding: 10px 15px;
+  line-height: 1.42857143;
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #007700;
+  border: 1px solid transparent;
+  margin-left: -1px;
+}
+
+.pager li > a,
+.pager li > span {
+  display: inline-block;
+  padding: 5px 14px;
+  background-color: #007700;
+  border: 1px solid transparent;
+  border-radius: 15px;
+}
+
+.pager .disabled > a,
+.pager .disabled > a:hover,
+.pager .disabled > a:focus,
+.pager .disabled > span {
+  color: #ffffff;
+  background-color: #007700;
+  cursor: not-allowed;
+}
+
+.label-success {
+  background-color: #007700;
+}
+
+a.thumbnail:hover,
+a.thumbnail:focus,
+a.thumbnail.active {
+  border-color: #007700;
+}
+
+.alert-success {
+  background-color: #007700;
+  border-color: #007700;
+  color: #ffffff;
+}
+
+.progress-bar-success {
+  background-color: #007700;
+}
+
+.list-group-item-success {
+  color: #ffffff;
+  background-color: #007700;
+}
+
+.panel-success {
+  border-color: #007700;
+}
+.panel-success > .panel-heading {
+  color: #ffffff;
+  background-color: #007700;
+  border-color: #007700;
+}
+.panel-success > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #007700;
+}
+.panel-success > .panel-heading .badge {
+  color: #007700;
+  background-color: #ffffff;
+}
+.panel-success > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #007700;
+}
+
+.text-success,
+.text-success:hover {
+  color: #007700;
+}
+
+.has-success .help-block,
+.has-success .control-label,
+.has-success .radio,
+.has-success .checkbox,
+.has-success .radio-inline,
+.has-success .checkbox-inline,
+.has-success.radio label,
+.has-success.checkbox label,
+.has-success.radio-inline label,
+.has-success.checkbox-inline label,
+.has-success .form-control-feedback {
+  color: #007700;
+}
+.has-success .form-control,
+.has-success .form-control:focus {
+  border: 2px solid #007700;
+}
+.has-success .input-group-addon {
+  border-color: #007700;
+}
+
+a.list-group-item-success.active {
+  background-color: #007700;
+}
+
+
+/* DR: Navbar background, text hover, and text focus color customization. */
+/* Navbar is lime green #007700. Changed mouseover sea green text to pale */
+/* yellow green #ccff99 for contrast with custom green navbar.            */
+
+.navbar-default {
+    background-color: #007700;
+    border-color: transparent;
+}
+
+/* Changing text from #777777 to #FFFFFF for better contrast with navbar background green. */
+.navbar-default .navbar-text {
+    color: #FFFFFF;
+}
+
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #ccff99;
+  background-color: transparent;
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #ccff99;
+  background-color: transparent;
+}
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #ffffff;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #ccff99;
+    background-color: transparent;
+  }
+/* */
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #007700;
+  background-color: transparent;
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #007700;
+  background-color: transparent;
+}
+
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #007700;
+    background-color: transparent;
+  }
+
+.navbar-default .navbar-link:hover {
+  color: #007700;
+}
+
+.navbar-default .btn-link:hover,
+.navbar-default .btn-link:focus {
+  color: #007700;
+}
+
+
+
+/****************************************************************/
+/* In case you want to use navbar inverse for Flatly Bootswatch */
+/* you can customize here.                                      */
+/****************************************************************/
+/*
+.navbar-inverse {
+  background-color: #007700;
+  border-color: transparent;
+}
+
+.navbar-inverse .badge {
+  background-color: #fff;
+  color: #007700;
+}
+
+.navbar-inverse .brand {
+  color: #007700;
+}
+*/
+
+

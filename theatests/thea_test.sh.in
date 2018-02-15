@@ -1,0 +1,31 @@
+#!/bin/bash
+# This script was created by cmake test system based 
+# on @SRCDIR@/nim_regression_test.sh.in
+#
+# Pass in -h as an option to see full set of options
+
+exec='@EXEC@'
+testname='@TESTNAME@'
+
+# This syntax allows overwriting while running; e.g.,
+#   @TESTNAME@.sh NPROCS=7
+nprocs=${NPROCS:-"@NPROCS@"}
+mpiexeccmd=${MPIEXECMD:-"@MPIEXECECMD@ @NPROCS@"}
+nl_file="-i @NL_FILE@"
+nl_varstr="-I @NL_VARSTR@"
+
+# This does initialization, set options, etc.
+. @SRCDIR@/nimharness.sh
+
+# Preprocess to get input file
+#@SRCDIR@/bin/modifyNlFile.py ${nl_file} ${nl_varstr} 
+
+${mpiexeccmd} ${exec} > ${testname}.out 2> ${testname}.err
+
+# Post-process: plot, calculate growth rates, etc.
+#@SRCDIR@/bin/nimPostProcess.py @PP_VARS@
+
+# Calculate any diffs
+#@SRCDIR@/bin/nimPostProcess.py @PP_VARS@
+
+
