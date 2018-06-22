@@ -403,11 +403,12 @@ int main(int argc, char *argv[])
   Teuchos::GlobalMPISession mpiSession(&argc, &argv); // initalize mpi
   int rank = MPIWrapper::CommWorld()->MyPID();
 
-//  Teuchos::CommandLineProcessor CLP;
+  Teuchos::CommandLineProcessor CLP;
 
 
 /******************** Mesh related inputs *********************/
   int mx = 21;
+  
   int my = 20;
   double plateLength = 2.0;
   double plateStart = 0.33333; //distance before start of plate
@@ -427,13 +428,13 @@ int main(int argc, char *argv[])
   double sourceCenter = 0.0; //centering parameter for source
   double dt = 1e-4; // do something fancier in the future CFL ~ u_xdt/dx~ 1/2
 //  CLP.setOption("dt", &dt);
-  int maxsteps = 3000;
+  int maxsteps = 5;
 /******************** Inputs for checkpointing *********************/
 
   string filename = "flateplate";
-  int ndum = 100;
-  int nsave = 100;
-  bool readFile = true;
+  int ndum = 5;
+  int nsave = 5;
+  bool readFile = false;
   string readFileName = "../18061401/flateplate3000";
 
   
@@ -467,9 +468,48 @@ int main(int argc, char *argv[])
   int sourceStep0 = -1000;
   int sourceStepf = -1100;
 
+/******************* Set up Command Line Processor  ***************************/
+// Mesh options
+  CLP.setOption("mx", &mx, "Number of Elements in x direction");
+  CLP.setOption("my", &my, "Number of Elements in y direction");
+  CLP.setOption("H1Order", &H1Order, "Polynomial Degree");
+  CLP.setOption("delta_k", &delta_k, "Polynomial Degree Enhancement");
+  CLP.setOption("plateLength", &plateLength, "Length of Plate");
+  CLP.setOption("plateStart", &plateStart, "Distance before the start of th plate");
+  CLP.setOption("yDim", &yDim, "Domain Height");
+// packing options
+  CLP.setOption("packMesh", "dontPack",  &packMesh, "Option to turn on Mesh Packing");
+//  CLP.setOption("xTau", &xTau, "x Direction backing factor");
+  CLP.setOption("yBeta", &yBeta, "y direction Mesh Packing Factor");
+  CLP.setOption("xBetaL", &xBetaL, "x Mesh Packing Factor left of plate");
+  CLP.setOption("xBetaR", &xBetaR, "x Mesh Packing Factor right of plate");
+  CLP.setOption("nXL", &nXL, "Number of Elements to pack left of plate");
+// time step options
+  CLP.setOption("centerParam", &centerParam, "Centering parameter for advection, diffusion, and pressure terms");
+  CLP.setOption("sourceCenter", &sourceCenter, "Centering parameter for source terms");
+  CLP.setOption("dt", &dt, "time step");
+  CLP.setOption("maxsteps", &maxsteps, "number of steps to take");
+// check pointing options 
+  CLP.setOption("filename", &filename, "Base name of out file");
+  CLP.setOption("ndum", &ndum, "Frequency of outputing plotting files");
+  CLP.setOption("nsave", &nsave, "Frequency of outputing check pointing files");
+  CLP.setOption("readFile", "dontRead", &readFile, "Flag to restart from file");
+  CLP.setOption("readFileName" , &readFileName, "File name to read from");
+// physics input
+  CLP.setOption("Re", &Re, "Reynolds Number");
+  CLP.setOption("flowVelocity", &flowVelocity, "input flow Velocity");
+  CLP.setOption("ipSpace", &ipSpace, "Inner product space: simple of chan");
+
+// turbulent model inputs
+  CLP.setOption("useTurbModel", "noTurbModel", &useTurbModel, "Use Turbulance Model");
+  CLP.setOption("useSANeg", "dontUseSANeg", &useSANeg, "Use SA-neg model");
+  CLP.setOption("useSBar", "dontUseSBar", &useSBar, "Use S bar");
+  CLP.setOption("chiFsBc", &chiFsBc, "chi freesteam bc");
+  CLP.setOption("sourceStep0", &sourceStep0, "First step to apply turblanent source term");
+  CLP.setOption("sourceStepf", &sourceStepf, "Step after which the turblanent source terms have their full magnitude");
 
 
-
+  CLP.parse( argc, argv );
 /******************* Begin Code ***************************/
 
 /******************* Set up 2D Flat Plate ***************************/
@@ -1078,7 +1118,7 @@ int main(int argc, char *argv[])
   int refNumber = 0;
   int numRefinements = 2;
   HDF5Exporter exporter(mesh, "SA-FlatPlate");
-  HDF5Exporter fexporter(mesh, "SA-f");
+//  HDF5Exporter fexporter(mesh, "SA-f");
   int numSubdivisions = 4;
 
   double newtonThreshold = 1.0e-3;
