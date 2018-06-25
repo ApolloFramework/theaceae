@@ -426,14 +426,14 @@ int main(int argc, char *argv[])
 /******************** Time stepping inputs *********************/
   double centerParam = 1.0; // combined centering paramter of advection, diffusion and pressure
   double sourceCenter = 0.0; //centering parameter for source
-  double dt = 1e-4; // do something fancier in the future CFL ~ u_xdt/dx~ 1/2
+  double dt = 1e-2; // do something fancier in the future CFL ~ u_xdt/dx~ 1/2
 //  CLP.setOption("dt", &dt);
-  int maxsteps = 5;
+  int maxsteps = 20;
 /******************** Inputs for checkpointing *********************/
 
   string filename = "flateplate";
   int ndum = 5;
-  int nsave = 5;
+  int nsave = 5000;
   bool readFile = false;
   string readFileName = "../18061401/flateplate3000";
 
@@ -467,6 +467,11 @@ int main(int argc, char *argv[])
 
   int sourceStep0 = -1000;
   int sourceStepf = -1100;
+
+
+  bool splitTurbAdv = true; //split turbulance for turbulance
+  int  nTurbSteps = 100; // number of steps in turbulant advance per fluid advance
+
 
 /******************* Set up Command Line Processor  ***************************/
 // Mesh options
@@ -532,7 +537,8 @@ int main(int argc, char *argv[])
 
 /******************* Define variables for calculation ***************************/
   VarFactoryPtr vf = VarFactory::varFactory();
-  
+  VarFactoryPtr tvf;
+
 // continuity equation (div v = 0)
   VarPtr tauRho = vf ->testVar("tauRho", HGRAD);
   VarPtr rhoFlux = vf ->fluxVar("rhoFlux",L2); // currently v dot n
@@ -566,15 +572,28 @@ int main(int argc, char *argv[])
 
   if (useTurbModel)
     {
-      chi = vf->fieldVar("chi", L2);
-      chiFlux = vf->fluxVar("chiFlux", L2);
-      tauChi = vf->testVar("tauChi", HGRAD);
+      if (splitTurbAdv)
+	{
+	  tvf = VarFactory::varFactory();
+	  chi = tvf->fieldVar("chi", L2);
+	  chiFlux = tvf->fluxVar("chiFlux", L2);
+	  tauChi = tvf->testVar("tauChi", HGRAD);
 
-      psi = vf->fieldVar("psi", VECTOR_L2);
-      chiHat = vf->traceVar("chihat",HGRAD);
-      tauPsi = vf->testVar("tauPsi", HDIV);
+	  psi = tvf->fieldVar("psi", VECTOR_L2);
+	  chiHat = tvf->traceVar("chihat",HGRAD);
+	  tauPsi = tvf->testVar("tauPsi", HDIV);
+	}
+      else
+	{
+	  chi = vf->fieldVar("chi", L2);
+	  chiFlux = vf->fluxVar("chiFlux", L2);
+	  tauChi = vf->testVar("tauChi", HGRAD);
+
+	  psi = vf->fieldVar("psi", VECTOR_L2);
+	  chiHat = vf->traceVar("chihat",HGRAD);
+	  tauPsi = vf->testVar("tauPsi", HDIV);
+	}
     }
-
 
 /******************* Create the solver pointers ***************************/
 
@@ -588,7 +607,15 @@ int main(int argc, char *argv[])
   IPPtr ip = IP::ip(); //create an inner product space pointer
   RHSPtr rhs = RHS::rhs();
 
+  BFPtr tBF; 
+  BCPtr tbc; 
+  IPPtr tip; 
+  RHSPtr trhs;
+
+  SolutionPtr tprevTime;
   MeshPtr mesh;
+  MeshPtr tmesh;
+
   if (!readFile)
     {
       mesh = MeshFactory::minRuleMesh(meshTopo, nonBF, 
@@ -598,9 +625,30 @@ int main(int argc, char *argv[])
     {
     mesh = MeshFactory::loadFromHDF5(nonBF, readFileName+".mesh");
     }
-
+  
+  
   SolutionPtr prevTime = Solution::solution(nonBF, mesh);
   mesh->registerSolution(prevTime);
+
+  if (useTurbModel&&splitTurbAdv)
+    {
+      tBF = BF::bf(tvf);
+      tbc = BC::bc();
+      tip = IP::ip(); 
+      trhs = RHS::rhs();
+
+      if (!readFile)
+	{
+	  MeshTopologyPtr tMeshTopo = meshTopo->deepCopy();
+	  tmesh = Teuchos::rcp( new Mesh(tMeshTopo, tBF, H1Order, delta_k) ) ;
+	}
+      else
+	{
+	  tmesh = MeshFactory::loadFromHDF5(tBF, readFileName+".mesh");
+	}
+      tprevTime = Solution::solution(tBF, tmesh);
+      tmesh->registerSolution(tprevTime);
+    }
 
  FunctionPtr sourceFactor = Teuchos::rcp(new RampFunction(sourceStep0,sourceStepf));
 /***************** Define constant pointers ***********************************/
@@ -638,12 +686,21 @@ int main(int argc, char *argv[])
 
   if(useTurbModel)
     {
-      chiPrev = Function::solution(chi,prevTime); 
-      chiFluxPrev = Function::solution(chiFlux,prevTime,true);
-      psiPrev = Function::solution(psi,prevTime); 
-      chiHatPrev = Function::solution(chiHat,prevTime,false);
+      if (splitTurbAdv)
+	{
+	  chiPrev = Function::solution(chi,tprevTime); 
+	  chiFluxPrev = Function::solution(chiFlux,tprevTime,true);
+	  psiPrev = Function::solution(psi,tprevTime); 
+	  chiHatPrev = Function::solution(chiHat,tprevTime,false);
+	}
+      else
+	{
+	  chiPrev = Function::solution(chi,prevTime); 
+	  chiFluxPrev = Function::solution(chiFlux,prevTime,true);
+	  psiPrev = Function::solution(psi,prevTime); 
+	  chiHatPrev = Function::solution(chiHat,prevTime,false);
+	}
     }
-
 /*************** Define SA constants of function ptrs ********************/
 
   double const saCB1 = 0.1355;
@@ -778,6 +835,8 @@ int main(int argc, char *argv[])
 /************* Define function ptrs realted to dt and the mesh  ****************/
   FunctionPtr invDt = Function::constant(1.0/dt);
   FunctionPtr sqrtInvDt = Function::constant(sqrt(1.0/dt));
+  FunctionPtr tinvDt = Function::constant(1.0*nTurbSteps/dt);
+  FunctionPtr tsqrtInvDt = Function::constant(sqrt(1.0*nTurbSteps/dt));
 
 
 
@@ -871,45 +930,87 @@ int main(int argc, char *argv[])
 
   if (useTurbModel)
     {
-    //chi equation (chi is the normalized SA working variable)
-      //dt term
-      nonBF->addTerm(chi * invDt, tauChi);
+    if (splitTurbAdv)
+            {
+	//chi equation (chi is the normalized SA working variable)
+	//dt term
+	tBF->addTerm(chi * tinvDt, tauChi);
 
-      // flux term: n dot V chi - psi
-      nonBF->addTerm(centerParam * chiFlux, tauChi);
-      rhs->addTerm(-chiFluxPrev * tauChi);
-
-      // advection term
-
-      nonBF->addTerm(-centerParam * vPrev * chi, tauChi->grad());
+	// flux term: n dot V chi - psi
+	tBF->addTerm(centerParam * chiFlux, tauChi);
+	trhs->addTerm(-chiFluxPrev * tauChi);
+	
+	// advection term
+	
+	tBF->addTerm(-centerParam * vPrev * chi, tauChi->grad());
 //      nonBF->addTerm(-centerParam * v * chiPrev, tauChi->grad());
-      rhs->addTerm(vPrev * chiPrev * tauChi->grad());
+	trhs->addTerm(vPrev * chiPrev * tauChi->grad());
 
-      // add the diffusion term
-      nonBF->addTerm(centerParam * psi, tauChi->grad());
-      rhs->addTerm(-psiPrev * tauChi->grad());
+	// add the diffusion term
+	tBF->addTerm(centerParam * psi, tauChi->grad());
+	trhs->addTerm(-psiPrev * tauChi->grad());
 
-      // Production Term (Treated explicitly)
-      rhs->addTerm(  sourceFactor * saProd * tauChi);
+	// Production Term (Treated explicitly)
+	trhs->addTerm(  sourceFactor * saProd * tauChi);
 
-      // Destruction Term (Treated explicitly)
-      rhs->addTerm( - sourceFactor * saDest * tauChi);
+	// Destruction Term (Treated explicitly)
+	trhs->addTerm( - sourceFactor * saDest * tauChi);
 
-      // Grad Chi Squared Term (Treated explicitly) 
-      // Grad Chi = psi/saDiff
+	// Grad Chi Squared Term (Treated explicitly) 
+	// Grad Chi = psi/saDiff
 
-      rhs->addTerm( saCB2/ (Re * saSigma) * psiPrev * psiPrev / (saDiff * saDiff) * tauChi);
+	trhs->addTerm( saCB2/ (Re * saSigma) * psiPrev * psiPrev / (saDiff * saDiff) * tauChi);
 
-      // gradchi eqn
-      nonBF->addTerm( psi / saDiff, tauPsi);
-      nonBF->addTerm(-chiHat, tauPsi->dot_normal());
-      nonBF->addTerm( chi, tauPsi->div());
+	// gradchi eqn
+	tBF->addTerm( psi / saDiff, tauPsi);
+	tBF->addTerm(-chiHat, tauPsi->dot_normal());
+	tBF->addTerm( chi, tauPsi->div());
+	
+	trhs->addTerm(-psiPrev / saDiff * tauPsi);
+	trhs->addTerm( chiHatPrev * tauPsi->dot_normal());
+	trhs->addTerm(-chiPrev * tauPsi->div());
+      }
+    else
+      {
+	//chi equation (chi is the normalized SA working variable)
+	//dt term
+	nonBF->addTerm(chi * invDt, tauChi);
 
-      rhs->addTerm(-psiPrev / saDiff * tauPsi);
-      rhs->addTerm( chiHatPrev * tauPsi->dot_normal());
-      rhs->addTerm(-chiPrev * tauPsi->div());
+	// flux term: n dot V chi - psi
+	nonBF->addTerm(centerParam * chiFlux, tauChi);
+	rhs->addTerm(-chiFluxPrev * tauChi);
+	
+	// advection term
+	
+	nonBF->addTerm(-centerParam * vPrev * chi, tauChi->grad());
+//      nonBF->addTerm(-centerParam * v * chiPrev, tauChi->grad());
+	rhs->addTerm(vPrev * chiPrev * tauChi->grad());
 
+	// add the diffusion term
+	nonBF->addTerm(centerParam * psi, tauChi->grad());
+	rhs->addTerm(-psiPrev * tauChi->grad());
 
+	// Production Term (Treated explicitly)
+	rhs->addTerm(  sourceFactor * saProd * tauChi);
+
+	// Destruction Term (Treated explicitly)
+	rhs->addTerm( - sourceFactor * saDest * tauChi);
+
+	// Grad Chi Squared Term (Treated explicitly) 
+	// Grad Chi = psi/saDiff
+
+	rhs->addTerm( saCB2/ (Re * saSigma) * psiPrev * psiPrev / (saDiff * saDiff) * tauChi);
+
+	// gradchi eqn
+	nonBF->addTerm( psi / saDiff, tauPsi);
+	nonBF->addTerm(-chiHat, tauPsi->dot_normal());
+	nonBF->addTerm( chi, tauPsi->div());
+	
+	rhs->addTerm(-psiPrev / saDiff * tauPsi);
+	rhs->addTerm( chiHatPrev * tauPsi->dot_normal());
+	rhs->addTerm(-chiPrev * tauPsi->div());
+      }
+    
     }
 
 /******************* Define the inner product space ***************************/
@@ -937,13 +1038,25 @@ int main(int argc, char *argv[])
 	ip->addTerm(tauSigmay);     
 	if (useTurbModel)
 	  {
-	    ip->addTerm(invDt * tauChi);
-	    ip->addTerm(tauChi);
-    	    ip->addTerm(tauPsi);
-    	    ip->addTerm(tauPsi->div());
-	    ip->addTerm(tauPsi->div() - vPrev * tauChi->grad());
-	    ip->addTerm(vPrev * tauChi->grad());	    
-	  }
+	    if (splitTurbAdv)
+	      {
+		tip->addTerm(tinvDt * tauChi);
+		tip->addTerm(tauChi);
+		tip->addTerm(tauPsi);
+		tip->addTerm(tauPsi->div());
+		tip->addTerm(tauPsi->div() - vPrev * tauChi->grad());
+		tip->addTerm(vPrev * tauChi->grad());	    
+	      }
+	    else
+	      {
+		ip->addTerm(invDt * tauChi);
+		ip->addTerm(tauChi);
+		ip->addTerm(tauPsi);
+		ip->addTerm(tauPsi->div());
+		ip->addTerm(tauPsi->div() - vPrev * tauChi->grad());
+		ip->addTerm(vPrev * tauChi->grad());	    
+	      }
+	    }
       break;
     case ipType:: chanNorm:
      if (rank==0) cout <<"Using Jesse Chan's Norm "  << endl;
@@ -984,6 +1097,10 @@ int main(int argc, char *argv[])
      if (rank==0) cout <<"Using Graph Norm "  << endl;
 
        ip = nonBF->graphNorm();
+       if (useTurbModel&&splitTurbAdv)
+	  {
+	    tip = tBF->graphNorm();
+	  }
     }
 
 
@@ -992,6 +1109,7 @@ int main(int argc, char *argv[])
  
 
 /******************* Apply the boundary conditions ***************************/
+  cout << "Apply BC" << endl;
 
   SpatialFilterPtr top = SpatialFilter::matchingY(yDim);
   SpatialFilterPtr bottom = SpatialFilter::matchingY(0.0);
@@ -1019,19 +1137,32 @@ int main(int argc, char *argv[])
 
   if (useTurbModel)
     {
+      if (splitTurbAdv)
+	{
+	  tbc->addDirichlet(chiHat, inFlow, chiFsBc -chiHatPrev);
+	  tbc->addDirichlet(chiFlux, top, zero);
+	  tbc->addDirichlet(chiHat, plate, zero);
+	  tbc->addDirichlet(chiFlux, bottomGap, zero);
+	}
+      else
+	{
  //     bc->addDirichlet(chiFlux, inFlow, e1 * flow * chiFsBc * nHat-chiFluxPrev);
-      bc->addDirichlet(chiHat, inFlow, chiFsBc -chiHatPrev);
-      bc->addDirichlet(chiFlux, top, zero);
-      bc->addDirichlet(chiHat, plate, zero);
-      bc->addDirichlet(chiFlux, bottomGap, zero);
+	  bc->addDirichlet(chiHat, inFlow, chiFsBc -chiHatPrev);
+	  bc->addDirichlet(chiFlux, top, zero);
+	  bc->addDirichlet(chiHat, plate, zero);
+	  bc->addDirichlet(chiFlux, bottomGap, zero);
+	}
     }
 
  
 
 /******************* Define the soln are related pointers ***************************/
 
+  cout << "Define Soln Pointers " << endl;
   SolutionPtr soln = Solution::solution(nonBF, mesh, bc, rhs, ip);
+  SolutionPtr tsoln;
 
+  cout << "Define Incr Pointers " << endl;
   FunctionPtr wIncr = Function::solution(w, soln);
   FunctionPtr vIncr = Function::solution(v, soln);
   FunctionPtr sigmaxxIncr = Function::solution(sigmaxx, soln);
@@ -1052,23 +1183,44 @@ int main(int argc, char *argv[])
   FunctionPtr l2PrevSolSqr =  wPrev * wPrev + vPrev * vPrev + sigmaxxPrev* sigmaxxPrev +
     sigmaxyPrev * sigmaxyPrev + sigmayyPrev * sigmayyPrev + omegaPrev * omegaPrev;
 
+  FunctionPtr chiIncr;
+  FunctionPtr psiIncr;
+  FunctionPtr tl2Sqr;
+  FunctionPtr l2ChiSqr;
+  FunctionPtr l2PsiSqr;
+
+  cout << "Use Turb Model If " << endl;
   if (useTurbModel)
     {
-      FunctionPtr chiIncr = Function::solution(chi, soln);
-      FunctionPtr psiIncr = Function::solution(psi, soln);
-      FunctionPtr l2ChiSqr = chiIncr*chiIncr;
-      FunctionPtr l2PsiSqr = psiIncr*psiIncr;
-      l2Sqr = l2Sqr + l2ChiSqr + l2PsiSqr;
+      if(splitTurbAdv)
+	{
+	  tsoln=Solution::solution(tBF, tmesh, tbc, trhs, tip);
+	  chiIncr = Function::solution(chi, tsoln);
+	  psiIncr = Function::solution(psi, tsoln);
+	  l2ChiSqr = chiIncr*chiIncr;
+	  l2PsiSqr = psiIncr*psiIncr;
+	  tl2Sqr = l2ChiSqr + l2PsiSqr;
+	}
+      else
+	{
+	  chiIncr = Function::solution(chi, soln);
+	  psiIncr = Function::solution(psi, soln);
+	  l2ChiSqr = chiIncr*chiIncr;
+	  l2PsiSqr = psiIncr*psiIncr;
+	  l2Sqr = l2Sqr + l2ChiSqr + l2PsiSqr;
+	}
+
       l2PrevSolSqr = l2PrevSolSqr + chiPrev * chiPrev + psiPrev * psiPrev;
     }
 
-
 /******************* Add an initial guess ***************************/
-
+  cout << "Add initial Guess" <<endl;
   const int solutionOrdinal = 0;
   if (!readFile)
     {
       map<int, FunctionPtr> initialGuess;
+      map<int, FunctionPtr> tinitialGuess;
+
       FunctionPtr saYValue = Teuchos::rcp(new  yValue);
       
       FunctionPtr vxInitial = flowVelocity/yDim * saYValue;
@@ -1101,8 +1253,17 @@ int main(int argc, char *argv[])
  //     chiInitial = Function::constant(chiFsBc);
  //     psiInitial =  Function::vectorize(zero,zero); 
 
-	  initialGuess[chi->ID()] = chiInitial;
-	  initialGuess[psi->ID()] = psiInitial;
+	  if(splitTurbAdv)
+	    {
+	      tinitialGuess[chi->ID()] = chiInitial;
+	      tinitialGuess[psi->ID()] = psiInitial;
+	      tprevTime->projectOntoMesh(tinitialGuess, solutionOrdinal);
+	    }
+	  else
+	    {
+	      initialGuess[chi->ID()] = chiInitial;
+	      initialGuess[psi->ID()] = psiInitial;
+	    }
 	}
 
       prevTime->projectOntoMesh(initialGuess, solutionOrdinal);
@@ -1110,14 +1271,21 @@ int main(int argc, char *argv[])
   else
     {
       prevTime->loadFromHDF5(readFileName+".soln");
+      if(useTurbModel&&splitTurbAdv)
+	{
+	  tprevTime->loadFromHDF5(readFileName+".tsoln");
+	}
     }
 
+  cout << "Here" << endl;
 /******************* Solve the Navier Stokes Eqn ***************************/
 
   double l2Incr = 0;
   int refNumber = 0;
   int numRefinements = 2;
   HDF5Exporter exporter(mesh, "SA-FlatPlate");
+  HDF5Exporter texporter(tmesh, "SA-Turb-FlatPlate");
+  
 //  HDF5Exporter fexporter(mesh, "SA-f");
   int numSubdivisions = 4;
 
@@ -1131,10 +1299,18 @@ int main(int argc, char *argv[])
   
   soln->setUseCondensedSolve(true);
   exporter.exportSolution(prevTime, 0, numSubdivisions);
+ 
+  if(useTurbModel&&splitTurbAdv)
+    {
+      tsoln->setUseCondensedSolve(true);
+      texporter.exportSolution(tprevTime, 0, numSubdivisions);
+
+    }
 //  fexporter.exportFunction(saDest,"saDest", 0, numSubdivisions);
 
   int pltnum = 1;
   int step = 0;
+  int tstep = 0;
   for (step = 0; step <= maxsteps; step++)
     {
       ((RampFunction*)sourceFactor.get())->UpdateStep(step);
@@ -1150,16 +1326,29 @@ int main(int argc, char *argv[])
 //	{
 	  prevTime->addSolution(soln,1.0);
 //	}
-
+	  if(useTurbModel&&splitTurbAdv)
+	    {
+	      for (tstep = 0; tstep <= nTurbSteps; tstep++)
+		{
+		  tsoln->solve();
+		  l2Incr = l2Incr+sqrt(tl2Sqr->integrate(tmesh));
+		  tprevTime->addSolution(tsoln,1.0);
+		}
+	    }
       if (step % ndum ==0)
       {
 	if (rank==0) cout << "Writing solution to file at step: " << step  << endl;
 	exporter.exportSolution(prevTime, pltnum, numSubdivisions);
 //	fexporter.exportFunction(saDest,"saDest", pltnum, numSubdivisions);
-  
+	if(useTurbModel&&splitTurbAdv)
+	  {
+	    texporter.exportSolution(tprevTime, pltnum, numSubdivisions);
+	  }
 	pltnum++;
       }
-      if (step % nsave ==0)
+      if (false)
+//      if (step % nsave ==0)
+
 	{
 	  if (rank==0)
 	    {
@@ -1171,7 +1360,11 @@ int main(int argc, char *argv[])
 	  
 	  prevTime->mesh()->saveToHDF5(oss+".mesh");
 	  prevTime->saveToHDF5(oss+".soln");
-	  
+	  if(useTurbModel&&splitTurbAdv)
+	    {
+	      tprevTime->mesh()->saveToHDF5(oss+".tmesh");
+	      tprevTime->saveToHDF5(oss+".tsoln");
+	    }
 	}
     }
 
