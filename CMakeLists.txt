@@ -35,7 +35,16 @@ set(BLDDIR ${CMAKE_BINARY_DIR})
 set(NOCXX TRUE)
 set(CMAKE_CXX_COMPILER_ID) # disables scimake c++ checking
 set(NOFORTRAN True)
-include(${SRCDIR}/../scimake/SciInit.cmake)
+# Various ways of using scimake
+if (EXISTS ${CMAKE_SOURCE_DIR}/scimake)
+   set(SCIMAKE_DIR ${CMAKE_SOURCE_DIR}/scimake)
+elseif (EXISTS ${CMAKE_SOURCE_DIR}/../scimake)
+   set(SCIMAKE_DIR ${CMAKE_SOURCE_DIR}/../scimake)
+else ()
+   # This is useful for spack
+   set(SCIMAKE_DIR $ENV{APOLLO_ROOT}/scimake)
+endif()
+include(${SCIMAKE_DIR}/SciInit.cmake)
 
 # Set permissions before adding subdirectories
 set(SCI_GROUP_WRITE GROUP_WRITE)
@@ -97,29 +106,27 @@ if (ENABLE_DOCS)
   # Add top level targets
   add_custom_target(userdocs ALL DEPENDS userdocs-html)
 endif (ENABLE_DOCS)
+
+#----------------------------------------------------------
+#   Dependencies
+#----------------------------------------------------------
+# First get the config file
+SciFindPackage(PACKAGE "Camellia"
+  INSTALL_DIR par
+  FIND_CONFIG_FILE
+  USE_CONFIG_FILE
+  CONFIG_SUBDIRS lib/Camellia/cmake
+)   
+
 #---------------------------------------------------------------------
 #  Add subdirectories -- 
 #---------------------------------------------------------------------
 add_subdirectory(theatests)
 
 #---------------------------------------------------------------------
-# Install draw files
-#---------------------------------------------------------------------
-if (NOT ENABLE_PARALLEL)
-  install(DIRECTORY draw DESTINATION .
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                           GROUP_READ GROUP_WRITE WORLD_READ
-          DIRECTORY_PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE
-                                GROUP_READ GROUP_EXECUTE GROUP_WRITE
-                                WORLD_READ WORLD_EXECUTE
-  )
-endif ()
-
-######################################################################
-#
 # Finalize (installation, packaging)
-#
-######################################################################
+#---------------------------------------------------------------------
 set(COMMON_INSTALL TRUE)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Theaceae: Collection of test cases to evaluate Petrov-Galerkin and other methods")
-include(${SRCDIR}/../scimake/SciFinalize.cmake)
+set(INSTALL_CONFIG_HEADERS FALSE)
+include(${SCIMAKE_DIR}/SciFinalize.cmake)
