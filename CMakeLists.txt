@@ -34,7 +34,7 @@ set(SRCDIR ${CMAKE_SOURCE_DIR})
 set(BLDDIR ${CMAKE_BINARY_DIR})
 set(NOCXX TRUE)
 set(CMAKE_CXX_COMPILER_ID) # disables scimake c++ checking
-disable_language(Fortran)
+set(NOFORTRAN True)
 include(${SRCDIR}/../scimake/SciInit.cmake)
 
 # Set permissions before adding subdirectories
