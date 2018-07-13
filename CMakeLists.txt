@@ -19,12 +19,7 @@ enable_testing()
 #---------------------------------------------------------------------
 # Set default values if not otherwise specified.
 #---------------------------------------------------------------------
-set(ENABLE_DOCS True 
-      CACHE BOOL "Whether to build the documentation")
-set(ENABLE_FLUID_DYNAMICS True 
-      CACHE BOOL "Whether to build and run fluid dynamics cases")
-set(ENABLE_ELECTROMAGNETICS True 
-      CACHE BOOL "Whether to build and run electrodynamics cases")
+set(ENABLE_DOCS True CACHE BOOL "Whether to build the documentation")
 
 
 #-----------------------------------------------------------
@@ -32,9 +27,7 @@ set(ENABLE_ELECTROMAGNETICS True
 #-----------------------------------------------------------
 set(SRCDIR ${CMAKE_SOURCE_DIR})
 set(BLDDIR ${CMAKE_BINARY_DIR})
-set(NOCXX TRUE)
-set(CMAKE_CXX_COMPILER_ID) # disables scimake c++ checking
-set(NOFORTRAN True)
+set (CMAKE_CXX_STANDARD 11)
 # Various ways of using scimake
 if (EXISTS ${CMAKE_SOURCE_DIR}/scimake)
    set(SCIMAKE_DIR ${CMAKE_SOURCE_DIR}/scimake)
@@ -117,6 +110,8 @@ SciFindPackage(PACKAGE "Camellia"
   USE_CONFIG_FILE
   CONFIG_SUBDIRS lib/Camellia/cmake
 )   
+
+include_directories(${Camellia_INCLUDE_DIRS} ${Camellia_TPL_INCLUDE_DIRS})
 
 #---------------------------------------------------------------------
 #  Add subdirectories -- 
