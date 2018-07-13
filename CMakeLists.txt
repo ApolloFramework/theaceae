@@ -65,8 +65,8 @@ endif ()
 #-----------------------------------------------------------
 if (ENABLE_DOCS)
   find_package(SciSphinx)
-  include(${SRCDIR}/../scimake/SciDocLogic.cmake)
-  include(${SRCDIR}/../scimake/Modules/SciSphinxFunctions.cmake)
+  include(${SCIMAKE_DIR}/SciDocLogic.cmake)
+  include(${SCIMAKE_DIR}/Modules/SciSphinxFunctions.cmake)
 
   find_package(SciMathJax REQUIRED)
   set(MATHJAXJS "MathJax/MathJax.js?config=TeX-AMS-MML_SVG-full.js")
@@ -122,6 +122,7 @@ SciFindPackage(PACKAGE "Camellia"
 #  Add subdirectories -- 
 #---------------------------------------------------------------------
 add_subdirectory(theatests)
+add_subdirectory(fluid_dynamics)
 
 #---------------------------------------------------------------------
 # Finalize (installation, packaging)
