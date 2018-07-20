@@ -15,18 +15,3 @@ provides a test harness for standardizing the running of the cases.
 
    fluid_dynamics/fluid_dynamics.rst
    electromagnetics/electromagnetics.rst
-
-
-Other links
------------
-
-The home pages, including where to find the source code for each package, is here:
-
-   * `PETSC home page<http://www.mcs.anl.gov/petsc/index.html>`_
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
