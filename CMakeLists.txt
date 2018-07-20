@@ -15,12 +15,17 @@ set(THEACEAE_VERSION "${PROJECT_VERSION}-${PROJECT_REV}")
 # Required version
 cmake_minimum_required(VERSION 2.8.6)
 enable_testing()
+cmake_policy(SET CMP0004 OLD)
+
+# Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.
+if (POLICY CMP0025)
+  cmake_policy(SET CMP0025 NEW)
+endif ()
 
 #---------------------------------------------------------------------
 # Set default values if not otherwise specified.
 #---------------------------------------------------------------------
 set(ENABLE_DOCS True CACHE BOOL "Whether to build the documentation")
-
 
 #-----------------------------------------------------------
 # Usual initialization stuff
