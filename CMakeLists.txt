@@ -87,6 +87,7 @@ if (ENABLE_DOCS)
   # Copy stuff over from docs because sphinxbuild doesn't allow full paths
   configure_file(${SRCDIR}/theadocs/conf.py.in ${BLDDIR}/conf.py)  # 1 copy
   configure_file(${SRCDIR}/theadocs/build_index.html.in ${BLDDIR}/build_index.html)  # 1 copy
+  file(COPY theadocs/customizations DESTINATION "${BLDDIR}/")
 
   # Pull together all ReST files for reference manual
   file(GLOB_RECURSE THEACEAE_DEPS RELATIVE ${SRCDIR} *.rst)

@@ -336,5 +336,8 @@ latex_preamble = r'''
 '''
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
-
-mathjax_path = '${MATHJAXJS}'
+# Using a hosted MathJax means that we don't need the full ~150M installation
+# (or even Tech-X's stripped down 53M version of MathJax)
+# See: http://docs.mathjax.org/en/latest/configuration.html
+# but we can't use it offline
+mathjax_path = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js'
