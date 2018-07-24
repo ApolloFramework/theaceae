@@ -79,9 +79,12 @@ if (ENABLE_DOCS)
   #---------------------
   # Create documentation 
   #---------------------
-  set(RST_FILE_BASE "Theaceae")
   set(RST_AUTHOR "ApolloFramework Team")
-  set(RST_TITLE  "Theaceae Documentation")
+
+  # Making apollo the main documentation  -- should probably have Theacae
+  # separate as well
+  set(RST_TITLE  "Apollo project documentation")
+  set(RST_FILE_BASE "Apollo")
   set(RST_MAIN_FILE ${RST_FILE_BASE}) 
 
   # Copy stuff over from docs because sphinxbuild doesn't allow full paths
