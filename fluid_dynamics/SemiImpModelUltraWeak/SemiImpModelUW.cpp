@@ -1,11 +1,10 @@
 /*
-  $Id: SemiImpModel 26 2018-06-08 19:30:25Z ehowell $
-  This code is implaments the incompressible Navier-Stokes equation with
-  a the Spalart-Allmaras Turbulence Model. 
-  It then solves for the the flow over a flat plate.
+  $Id: SemiImpModelUW 26 2018-06-08 19:30:25Z ehowell $
 
-  This model uses a conservative form for the navier stokes equations, and 
-  sa-working variable equation. It also uses a modified inner product space.
+  This code modeling the propogation of sound waves with a background flow.
+  The purpose is to test the behavior of the semi-implicit operator with
+  large flows, and to see if the DPG methods allows us to take large time
+  steps.
  */
 
 #include "Camellia.h" 
