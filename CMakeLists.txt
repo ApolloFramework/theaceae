@@ -15,27 +15,34 @@ set(THEACEAE_VERSION "${PROJECT_VERSION}-${PROJECT_REV}")
 # Required version
 cmake_minimum_required(VERSION 2.8.6)
 enable_testing()
+cmake_policy(SET CMP0004 OLD)
+
+# Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.
+if (POLICY CMP0025)
+  cmake_policy(SET CMP0025 NEW)
+endif ()
 
 #---------------------------------------------------------------------
 # Set default values if not otherwise specified.
 #---------------------------------------------------------------------
-set(ENABLE_DOCS True 
-      CACHE BOOL "Whether to build the documentation")
-set(ENABLE_FLUID_DYNAMICS True 
-      CACHE BOOL "Whether to build and run fluid dynamics cases")
-set(ENABLE_ELECTROMAGNETICS True 
-      CACHE BOOL "Whether to build and run electrodynamics cases")
-
+set(ENABLE_DOCS True CACHE BOOL "Whether to build the documentation")
 
 #-----------------------------------------------------------
 # Usual initialization stuff
 #-----------------------------------------------------------
 set(SRCDIR ${CMAKE_SOURCE_DIR})
 set(BLDDIR ${CMAKE_BINARY_DIR})
-set(NOCXX TRUE)
-set(CMAKE_CXX_COMPILER_ID) # disables scimake c++ checking
-disable_language(Fortran)
-include(${SRCDIR}/../scimake/SciInit.cmake)
+set (CMAKE_CXX_STANDARD 11)
+# Various ways of using scimake
+if (EXISTS ${CMAKE_SOURCE_DIR}/scimake)
+   set(SCIMAKE_DIR ${CMAKE_SOURCE_DIR}/scimake)
+elseif (EXISTS ${CMAKE_SOURCE_DIR}/../scimake)
+   set(SCIMAKE_DIR ${CMAKE_SOURCE_DIR}/../scimake)
+else ()
+   # This is useful for spack
+   set(SCIMAKE_DIR $ENV{APOLLO_ROOT}/scimake)
+endif()
+include(${SCIMAKE_DIR}/SciInit.cmake)
 
 # Set permissions before adding subdirectories
 set(SCI_GROUP_WRITE GROUP_WRITE)
@@ -56,8 +63,8 @@ endif ()
 #-----------------------------------------------------------
 if (ENABLE_DOCS)
   find_package(SciSphinx)
-  include(${SRCDIR}/../scimake/SciDocLogic.cmake)
-  include(${SRCDIR}/../scimake/Modules/SciSphinxFunctions.cmake)
+  include(${SCIMAKE_DIR}/SciDocLogic.cmake)
+  include(${SCIMAKE_DIR}/Modules/SciSphinxFunctions.cmake)
 
   find_package(SciMathJax REQUIRED)
   set(MATHJAXJS "MathJax/MathJax.js?config=TeX-AMS-MML_SVG-full.js")
@@ -72,14 +79,18 @@ if (ENABLE_DOCS)
   #---------------------
   # Create documentation 
   #---------------------
-  set(RST_FILE_BASE "Theaceae")
   set(RST_AUTHOR "ApolloFramework Team")
-  set(RST_TITLE  "Theaceae Documentation")
+
+  # Making apollo the main documentation  -- should probably have Theacae
+  # separate as well
+  set(RST_TITLE  "Apollo project documentation")
+  set(RST_FILE_BASE "Apollo")
   set(RST_MAIN_FILE ${RST_FILE_BASE}) 
 
   # Copy stuff over from docs because sphinxbuild doesn't allow full paths
   configure_file(${SRCDIR}/theadocs/conf.py.in ${BLDDIR}/conf.py)  # 1 copy
   configure_file(${SRCDIR}/theadocs/build_index.html.in ${BLDDIR}/build_index.html)  # 1 copy
+  file(COPY theadocs/customizations DESTINATION "${BLDDIR}/")
 
   # Pull together all ReST files for reference manual
   file(GLOB_RECURSE THEACEAE_DEPS RELATIVE ${SRCDIR} *.rst)
@@ -97,29 +108,30 @@ if (ENABLE_DOCS)
   # Add top level targets
   add_custom_target(userdocs ALL DEPENDS userdocs-html)
 endif (ENABLE_DOCS)
+
+#----------------------------------------------------------
+#   Dependencies
+#----------------------------------------------------------
+# First get the config file
+SciFindPackage(PACKAGE "Camellia"
+  INSTALL_DIR par
+  FIND_CONFIG_FILE
+  USE_CONFIG_FILE
+  CONFIG_SUBDIRS lib/Camellia/cmake
+)   
+
+include_directories(${Camellia_INCLUDE_DIRS} ${Camellia_TPL_INCLUDE_DIRS})
+
 #---------------------------------------------------------------------
 #  Add subdirectories -- 
 #---------------------------------------------------------------------
 add_subdirectory(theatests)
+add_subdirectory(fluid_dynamics)
 
 #---------------------------------------------------------------------
-# Install draw files
-#---------------------------------------------------------------------
-if (NOT ENABLE_PARALLEL)
-  install(DIRECTORY draw DESTINATION .
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                           GROUP_READ GROUP_WRITE WORLD_READ
-          DIRECTORY_PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE
-                                GROUP_READ GROUP_EXECUTE GROUP_WRITE
-                                WORLD_READ WORLD_EXECUTE
-  )
-endif ()
-
-######################################################################
-#
 # Finalize (installation, packaging)
-#
-######################################################################
+#---------------------------------------------------------------------
 set(COMMON_INSTALL TRUE)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Theaceae: Collection of test cases to evaluate Petrov-Galerkin and other methods")
-include(${SRCDIR}/../scimake/SciFinalize.cmake)
+set(INSTALL_CONFIG_HEADERS FALSE)
+include(${SCIMAKE_DIR}/SciFinalize.cmake)
