@@ -77,9 +77,9 @@ int main(int argc, char *argv[])
 /******************** Time step inputs *********************/
   double dt = 100;
   double center = 0.5;
-  double semiCo = 0.51;
-  int nstep = 1000;
-  int ndump = 10;
+  double semiCo = 0.25;
+  int nstep = 5000;
+  int ndump = 100;
 
 
   bool addAdvectIp = true;
@@ -419,7 +419,7 @@ int main(int argc, char *argv[])
   vPert[vy->ID()] = zero;
 
   vPert[gradVx->ID()] = 
-    Function::vectorize(-kxPert * amp /(gamma * Mach) * gradVxPertFunc,
+    Function::vectorize(kxPert * amp /(gamma * Mach) * gradVxPertFunc,
 			zero);
 
   vPert[gradVy->ID()] = Function::vectorize(zero,zero);
@@ -429,7 +429,7 @@ int main(int argc, char *argv[])
   FunctionPtr gradPPertFunc = Teuchos::rcp(new sinwtkx(kxPert, wdt));
 
   pPert[p->ID()] = amp * pPertFunc;
-  pPert[gradP->ID()] = Function::vectorize(-kxPert * amp * gradPPertFunc,zero);
+  pPert[gradP->ID()] = Function::vectorize(kxPert * amp * gradPPertFunc,zero);
 
   vPrevTime->projectOntoMesh(vPert, solutionOrdinal);
   pPrevTime->projectOntoMesh(pPert, solutionOrdinal);
