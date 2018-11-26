@@ -1,0 +1,51 @@
+  #-------------------- Mesh related inputs --------------------/
+  mesh:
+    mx: 21
+    my: 20
+    plateLength: 2.0
+    #  double plateStart: 0.5 
+    plateStart: 0.33333 # distance before start of plate
+    yDim: 1.0
+    H1Order: 4
+    delta_k: 2
+    packMesh: true
+    xTau: 4.01 #  was 0.01
+    yBeta: 1.0025 # was 1.025 1.000025 is need for y1 ~8e-6 
+    xBetaL: 1.009
+    xBetaR: 1.025
+    nXL: 3
+
+  #-------------------- Time stepping inputs ----------------------
+  timeControl:
+    dt: 1e-2 # do something fancier in the future CFL ~ u_xdt/dx~ 1/2
+    maxsteps: 20
+    centerParam: 1.0  # combined centering paramter of advection, diffusion and pressure
+    sourceCenter: 0.0 #centering parameter for source
+
+  #-------------------- Inputs for checkpointing ----------------------
+  dump:
+    filename: "flateplate"
+    ndum: 5
+    nsave: 5000
+    readFile: false
+    readFileName: "../18061401/flateplate3000"
+
+
+  #-------------------- Physics inputs ----------------------------
+  physics:
+    Re: 1.0e6
+    sourceStep0: -1000
+    sourceStepf: -1100
+    ipSpace: "simple"; // other options: chan, graph
+    #-- Initialization inputs --
+    flowVelocity: 1.0;
+
+  #------------------- SA turbulance model inputs ----------------------------
+  turbulence:
+    useTurbModel: true
+    useSANeg: true   #When true use the SA-neg model (see NASA website)
+    useSBar: true   # When true use SBar not STilde (see NASA website)
+    chiFsBc: 3.0   # chi freestream bc should be between 3 and 5
+    splitTurbAdv: true   #split turbulance for turbulance
+    nTurbSteps: 100   # number of steps in turbulant advance per fluid advance
+
