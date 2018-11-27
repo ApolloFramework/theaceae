@@ -27,6 +27,7 @@
 #ifdef HAVE_TEUCHOS_EXTENDED
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"
 #include "Teuchos_YamlParser_decl.hpp"
+#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #endif
 
 
@@ -43,6 +44,6 @@ namespace Theaceae
 {
   /** \brief Yaml and CLI parsing for RANS Turbulence model runs
    */
-  ParameterList thcCFDInput(int argc, char* argv[] );
+  int thcCFDInput(int argc, char* argv[], ParameterList &thcPL );
 }
 #endif

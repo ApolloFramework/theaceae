@@ -1,4 +1,7 @@
-  #-------------------- Mesh related inputs --------------------/
+%YAML 1.1
+---
+#-------------------- Mesh related inputs --------------------/
+theaceae:
   mesh:
     mx: 21
     my: 20
@@ -25,20 +28,20 @@
   #-------------------- Inputs for checkpointing ----------------------
   dump:
     filename: "flateplate"
-    ndum: 5
+    ndump: 5
     nsave: 5000
     readFile: false
     readFileName: "../18061401/flateplate3000"
 
 
   #-------------------- Physics inputs ----------------------------
-  physics:
+  fluid:
     Re: 1.0e6
     sourceStep0: -1000
     sourceStepf: -1100
-    ipSpace: "simple"; // other options: chan, graph
     #-- Initialization inputs --
-    flowVelocity: 1.0;
+    flowVelocity: 1.0
+    ipSpace: "simple" # other options: chan, graph
 
   #------------------- SA turbulance model inputs ----------------------------
   turbulence:
@@ -48,4 +51,4 @@
     chiFsBc: 3.0   # chi freestream bc should be between 3 and 5
     splitTurbAdv: true   #split turbulance for turbulance
     nTurbSteps: 100   # number of steps in turbulant advance per fluid advance
-
+...

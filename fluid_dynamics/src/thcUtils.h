@@ -19,6 +19,11 @@ namespace Theaceae
 /** \brief Function for time ramp of fields
  */
 class RampFunction : public Function {
+  private:
+    int _t0;
+    int _tf;
+    double _dStep;  
+    double _value;
   public:
     /** \brief Actual function */
     RampFunction( int t0, int tf );
@@ -32,9 +37,12 @@ class RampFunction : public Function {
 /** \brief Function for raising the fields to a power at each point
  */
 class PowFunction : public Function {
+  private:
+    FunctionPtr _function;
+    double _n;
   public:
     /** \brief Actual function */
-    PowFunction(FunctionPtr function, double n);
+    PowFunction(FunctionPtr function, double n) {};
     /** \brief values */
     void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
 };
@@ -42,9 +50,11 @@ class PowFunction : public Function {
 /** \brief Function for taking the absolute value of a field at each point
  */
 class AbsFunction : public Function {
+  private:
+    FunctionPtr _function;
   public:
     /** \brief Actual function */
-    AbsFunction(FunctionPtr function);
+    AbsFunction(FunctionPtr function) {};
     /** \brief values */
     void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
 };
@@ -52,9 +62,11 @@ class AbsFunction : public Function {
 /** \brief Function for taking field at each point
  */
 class EFunction : public Function {
+  private:
+    FunctionPtr _function;
   public:
     /** \brief Actual function */
-    EFunction(FunctionPtr function);
+    EFunction(FunctionPtr function) {};
     /** \brief values */
     void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
 };
@@ -62,9 +74,11 @@ class EFunction : public Function {
 /** \brief Function for taking field at each point
  */
 class GtrZeroFunction : public Function {
+  private:
+    FunctionPtr _function;
   public:
     /** \brief Actual function */
-    GtrZeroFunction(FunctionPtr function);
+    GtrZeroFunction(FunctionPtr function) {};
     /** \brief values */
     void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
 };
@@ -73,9 +87,15 @@ class GtrZeroFunction : public Function {
  */
 class distanceToPlate : public SimpleFunction<double>
 {
+  double _plateX0; //x value of leading edge of the plate
+  double _plateY; //y value of plate (assumes a horziontal plate) 
   public:
     /** \brief Actual function */
-    distanceToPlate(double plateX0, double plateY);
+    distanceToPlate(double plateX0, double plateY)
+    {
+      _plateX0=plateX0;
+      _plateY =plateY;
+    };
     /** \brief values */
     double value(double x, double y);
 };

@@ -12,9 +12,13 @@
 #include "Teuchos_ParameterList.hpp" 
 #include <math.h>
 
+using namespace Teuchos;
 using namespace Camellia;
 using namespace std;
 
+
+namespace Theaceae
+{
 
 /********************* Create a packed rectangular mesh ************************/
 MeshTopologyPtr RectMeshPack(vector<double> dimensions, vector<int> elementCounts, vector<double>x0, double xPack, double xTau, double yBeta)
@@ -214,4 +218,40 @@ MeshTopologyPtr RectMeshPack2(vector<double> dimensions, vector<int> elementCoun
   }
   MeshGeometryPtr geometry = Teuchos::rcp( new MeshGeometry(vertices, allElementVertices, cellTopos));
   return Teuchos::rcp( new MeshTopology(geometry) );
+};
+
+MeshTopologyPtr thcCreateRectMesh(ParameterList meshPL )
+{
+  using std::cout;
+  using std::endl;
+
+  double plateStart = meshPL.get<double>("plateStart");
+  double xDim = meshPL.get<double>("plateLength") + plateStart;
+  double yDim = meshPL.get<double>("yDim");
+  double yBeta = meshPL.get<double>("yBeta");
+  double xBetaL = meshPL.get<double>("xBetaL");
+  double xBetaR = meshPL.get<double>("xBetaR");
+  int nXL = meshPL.get<int>("nXL");
+  bool packMesh = meshPL.get<bool>("packMesh");
+  int mx = meshPL.get<int>("mx");
+  int my = meshPL.get<int>("my");
+  vector<double> dims = {xDim, yDim}; // dimensions of the mesh
+  vector<int> meshDims = {mx,my}; 
+  vector<double> x0 = {-plateStart, 0.0}; // mesh is s.t. plate begins at x=0
+
+  MeshTopologyPtr meshTopo;
+  if (packMesh)
+    {
+//      meshTopo = RectMeshPack(dims, meshDims, x0, 0.0, xTau, yBeta);
+      meshTopo = RectMeshPack2(dims, meshDims, x0, 0.0, xBetaL, xBetaR, nXL, yBeta);
+    }
+  else
+    {
+      meshTopo = MeshFactory::rectilinearMeshTopology(dims, meshDims, x0);
+    }
+
+  return meshTopo;
+
+};
+
 }

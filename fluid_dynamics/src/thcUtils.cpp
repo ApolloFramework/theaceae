@@ -6,183 +6,134 @@
 
 #include "Camellia.h" 
 #include <math.h>
+#include "thcUtils.h" 
 
 using namespace Camellia;
 using namespace std;
+using namespace Theaceae;
 
 /********************* Helper Functions ************************/
-class RampFunction : public Function {
-  private:
-    int _t0;
-    int _tf;
-    double _dStep;  
-    double _value;
-  public:
-  RampFunction( int t0, int tf ) : Function(0), _t0(t0), _tf(tf) {
-   _dStep = 1.0/(1.0 *(_tf - _t0) );
-    if (_tf < 0)
-      {
-	_value = 1.0;
-      }
-    else if (_t0 < 0)
-      {
-	_value = -_dStep * _t0;
-      }
-    else
-      {
-	_value = 0.0;
-      }
+RampFunction::RampFunction( int t0, int tf ) : Function(0), _t0(t0), _tf(tf) {
+  RampFunction::_dStep = 1.0/(1.0 *(RampFunction::_tf - RampFunction::_t0) );
+  if (RampFunction::_tf < 0)
+  {
+    RampFunction::_value = 1.0;
   }
-  void UpdateStep(int step) {
-    if (step >= _tf)
-      {
-	_value = 1.0;
-      }
-    else if ( step <= _t0)
-      {
-	_value = 0.0; 
-      }
-    else
-      {
-	_value = _dStep * (step - _t0);
-      }
-    cout << "Step: "<< step << " Value: " << _value << endl;
+  else if (RampFunction::_t0 < 0)
+  {
+    RampFunction::_value = -RampFunction::_dStep * RampFunction::_t0;
   }
-  void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
-    int numCells = values.dimension(0);
-    int numPoints = values.dimension(1);
+  else
+  {
+    RampFunction::_value = 0.0;
+  }
+}
+void RampFunction::UpdateStep(int step) {
+  if (step >= RampFunction::_tf)
+  {
+    RampFunction::_value = 1.0;
+  }
+  else if ( step <= RampFunction::_t0)
+  {
+    RampFunction::_value = 0.0; 
+  }
+  else
+  {
+    RampFunction::_value = RampFunction::_dStep * (step - RampFunction::_t0);
+  }
+  cout << "Step: "<< step << " Value: " << _value << endl;
+}
+void RampFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+  int numCells = values.dimension(0);
+  int numPoints = values.dimension(1);
 
-    
-
-    const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
-    for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
-      for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
-        values(cellIndex, ptIndex) = _value;
-      }
+  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
+    for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
+      values(cellIndex, ptIndex) = RampFunction::_value;
     }
   }
-};
+}
 
 
-class PowFunction : public Function {
-  private:
-    FunctionPtr _function;
-    double _n;
-  public:
-    PowFunction(FunctionPtr function, double n) : Function(0), _function(function), _n(n) {}
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
-      int numCells = values.dimension(0);
-      int numPoints = values.dimension(1);
+void PowFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+  int numCells = values.dimension(0);
+  int numPoints = values.dimension(1);
 
-      _function->values(values, basisCache);
+  PowFunction::_function->values(values, basisCache);
 
-      const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
-      for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
-        for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
-          values(cellIndex, ptIndex) = pow(values(cellIndex, ptIndex),_n);
-        }
-      }
+  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
+    for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
+      values(cellIndex, ptIndex) = pow(values(cellIndex, ptIndex),PowFunction::_n);
     }
-};
+  }
+}
 
-class AbsFunction : public Function {
-  private:
-    FunctionPtr _function;
-  public:
-    AbsFunction(FunctionPtr function) : Function(0), _function(function) {}
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
-      int numCells = values.dimension(0);
-      int numPoints = values.dimension(1);
+void AbsFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+  int numCells = values.dimension(0);
+  int numPoints = values.dimension(1);
 
-      _function->values(values, basisCache);
+  _function->values(values, basisCache);
 
-      const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
-      for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
-        for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
-          values(cellIndex, ptIndex) = abs(values(cellIndex, ptIndex));
-        }
-      }
+  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
+    for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
+      values(cellIndex, ptIndex) = abs(values(cellIndex, ptIndex));
     }
-};
+  }
+}
 
-class EFunction : public Function {
-  private:
-    FunctionPtr _function;
-  public:
-    EFunction(FunctionPtr function) : Function(0), _function(function) {}
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
-      int numCells = values.dimension(0);
-      int numPoints = values.dimension(1);
+void EFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+  int numCells = values.dimension(0);
+  int numPoints = values.dimension(1);
 
-      _function->values(values, basisCache);
+  EFunction::_function->values(values, basisCache);
 
-      const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
-      for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
-        for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
-          values(cellIndex, ptIndex) = exp(values(cellIndex, ptIndex));
-        }
-      }
+  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
+    for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
+      values(cellIndex, ptIndex) = exp(values(cellIndex, ptIndex));
     }
-};
+  }
+}
 
-class GtrZeroFunction : public Function {
-  private:
-    FunctionPtr _function;
-  public:
-    GtrZeroFunction(FunctionPtr function) : Function(0), _function(function) {}
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
-      int numCells = values.dimension(0);
-      int numPoints = values.dimension(1);
+void GtrZeroFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+  int numCells = values.dimension(0);
+  int numPoints = values.dimension(1);
 
-      _function->values(values, basisCache);
+  GtrZeroFunction::_function->values(values, basisCache);
 
-      const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
-      for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
-        for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
-	  if (values(cellIndex, ptIndex)>0)
-	    {
-	      values(cellIndex, ptIndex) = 1.0;
-	    }
-	  else
-	    {
-	      values(cellIndex, ptIndex) = 0.0;
-	    }
-        }
-      }
-    }
-};
-
-
-class distanceToPlate : public SimpleFunction<double>
-{
-  double _plateX0; //x value of leading edge of the plate
-  double _plateY; //y value of plate (assumes a horziontal plate) 
-public:
-  distanceToPlate(double plateX0, double plateY)
+  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
+    for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
+  if (values(cellIndex, ptIndex)>0)
     {
-      _plateX0=plateX0;
-      _plateY =plateY;
+      values(cellIndex, ptIndex) = 1.0;
     }
-  double value(double x, double y)
-  {
-    if (x < _plateX0)
-      {
-	return sqrt( pow(x-_plateX0,2) + pow(y-_plateY,2)); 
-      }
-    else
-      {
-	return (y-_plateY);
-      }
+  else
+    {
+      values(cellIndex, ptIndex) = 0.0;
+    }
+    }
   }
-};
+}
 
 
-class yValue : public SimpleFunction<double>
+double distanceToPlate::value(double x, double y)
 {
-public:
-  yValue() {}
-  double value(double x, double y)
-  {
-    return (y);
-  }
-};
+  if (x < _plateX0)
+    {
+  return sqrt( pow(x-_plateX0,2) + pow(y-_plateY,2)); 
+    }
+  else
+    {
+  return (y-_plateY);
+    }
+}
+
+
+double yValue::value(double x, double y)
+{
+  return (y);
+}

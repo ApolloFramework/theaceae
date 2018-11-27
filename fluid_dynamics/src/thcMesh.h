@@ -21,6 +21,8 @@ using namespace std;
 namespace Theaceae
 {
 
+MeshTopologyPtr thcCreateRectMesh(ParameterList meshPL );
+
 /** \brief Create packed rectangular mesh*/
 MeshTopologyPtr RectMeshPack(vector<double> dimensions, vector<int> elementCounts, vector<double>x0, double xPack, double xTau, double yBeta);
 /** \brief Create packed rectangular mesh*/
