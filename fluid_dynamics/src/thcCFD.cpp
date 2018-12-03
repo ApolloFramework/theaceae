@@ -11,7 +11,7 @@
 #include "Camellia.h" 
 #include "Teuchos_ParameterList.hpp" 
 #include "thcCfdInput.h" 
-#include "thcUtils.h" 
+#include "thcFunctions.h" 
 #include "thcMesh.h" 
 #include <math.h>
 
@@ -752,18 +752,18 @@ int main( int argc, char *argv[] )
     initialGuess[omega->ID()] = -0.5 * gradVxyInitial * invRe;
     initialGuess[w->ID()] = zero;
     
-    FunctionPtr chiInitial; 
-    FunctionPtr psiInitial;  
+    TFunctionPtr<double> chiInitial; 
+    TFunctionPtr<double> psiInitial;  
 
     cout << "Here  A" << endl;
     if (useTurbModel)
     {
       cout << "Here  B a" << endl;
-      FunctionPtr normY = 1.0/yDim * saYValue;
-      FunctionPtr normY2 =  Teuchos::rcp(new PowFunction(normY , 2.0));
-      FunctionPtr normY3 =  Teuchos::rcp(new PowFunction(normY , 3.0));
-      FunctionPtr chi0 = chiFsBc * (-2.0 * normY3 + 3.0 * normY2);
-      FunctionPtr psi0y = 6.0*chiFsBc/(saSigma*yDim) * invRe * (one + chi0)*(normY-normY2); 
+      TFunctionPtr<double> normY = 1.0/yDim * saYValue;
+      TFunctionPtr<double> normY2 =  Teuchos::rcp(new PowFunction(normY , 2.0));
+      TFunctionPtr<double> normY3 =  Teuchos::rcp(new PowFunction(normY , 3.0));
+      TFunctionPtr<double> chi0 = chiFsBc * (-2.0 * normY3 + 3.0 * normY2);
+      TFunctionPtr<double> psi0y = 6.0*chiFsBc/(saSigma*yDim) * invRe * (one + chi0)*(normY-normY2); 
       //      chiInitial = chiFsBc/yDim * saYValue;
       //      psiInitial =  Function::vectorize(zero,zero); 
       chiInitial = chi0;

@@ -6,14 +6,14 @@
 
 #include "Camellia.h" 
 #include <math.h>
-#include "thcUtils.h" 
+#include "thcFunctions.h" 
 
-using namespace Camellia;
+// using namespace Camellia;
 using namespace std;
 using namespace Theaceae;
 
 /********************* Helper Functions ************************/
-RampFunction::RampFunction( int t0, int tf ) : Function(0), _t0(t0), _tf(tf) {
+RampFunction::RampFunction( int t0, int tf ) : _t0(t0), _tf(tf) {
   RampFunction::_dStep = 1.0/(1.0 *(RampFunction::_tf - RampFunction::_t0) );
   if (RampFunction::_tf < 0)
   {
@@ -28,6 +28,7 @@ RampFunction::RampFunction( int t0, int tf ) : Function(0), _t0(t0), _tf(tf) {
     RampFunction::_value = 0.0;
   }
 }
+
 void RampFunction::UpdateStep(int step) {
   if (step >= RampFunction::_tf)
   {
@@ -43,7 +44,7 @@ void RampFunction::UpdateStep(int step) {
   }
   cout << "Step: "<< step << " Value: " << _value << endl;
 }
-void RampFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+void RampFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
@@ -56,13 +57,13 @@ void RampFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePt
 }
 
 
-void PowFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+void PowFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
-  PowFunction::_function->values(values, basisCache);
+  cout << _function;
+  _function->values(values, basisCache);
 
-  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
   for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
     for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
       values(cellIndex, ptIndex) = pow(values(cellIndex, ptIndex),PowFunction::_n);
@@ -70,7 +71,7 @@ void PowFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr
   }
 }
 
-void AbsFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+void AbsFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
@@ -84,7 +85,7 @@ void AbsFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr
   }
 }
 
-void EFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+void EFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
@@ -98,7 +99,7 @@ void EFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr b
   }
 }
 
-void GtrZeroFunction::values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache) {
+void GtrZeroFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 

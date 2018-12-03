@@ -10,7 +10,7 @@
 #include "Camellia.h" 
 #include <math.h>
 
-using namespace Camellia;
+// using namespace Camellia;
 using namespace std;
 
 namespace Theaceae
@@ -18,7 +18,7 @@ namespace Theaceae
 
 /** \brief Function for time ramp of fields
  */
-class RampFunction : public Function {
+class RampFunction : public Camellia::SimpleFunction<double> {
   private:
     int _t0;
     int _tf;
@@ -30,62 +30,62 @@ class RampFunction : public Function {
     /** \brief Update to step number   */
     void UpdateStep(int step);
     /** \brief values */
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
+    void values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache);
 };
 
 
 /** \brief Function for raising the fields to a power at each point
  */
-class PowFunction : public Function {
+class PowFunction : public Camellia::SimpleFunction<double> {
   private:
-    FunctionPtr _function;
+    Camellia::TFunctionPtr<double> _function{nullptr};
     double _n;
   public:
     /** \brief Actual function */
-    PowFunction(FunctionPtr function, double n) {};
+    PowFunction(Camellia::TFunctionPtr<double> function, double n) {};
     /** \brief values */
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
+    void values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache);
 };
 
 /** \brief Function for taking the absolute value of a field at each point
  */
-class AbsFunction : public Function {
+class AbsFunction : public Camellia::SimpleFunction<double> {
   private:
-    FunctionPtr _function;
+    Camellia::TFunctionPtr<double> _function;
   public:
     /** \brief Actual function */
-    AbsFunction(FunctionPtr function) {};
+    AbsFunction(Camellia::TFunctionPtr<double> function) {};
     /** \brief values */
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
+    void values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache);
 };
 
 /** \brief Function for taking field at each point
  */
-class EFunction : public Function {
+class EFunction : public Camellia::SimpleFunction<double> {
   private:
-    FunctionPtr _function;
+    Camellia::TFunctionPtr<double> _function;
   public:
     /** \brief Actual function */
-    EFunction(FunctionPtr function) {};
+    EFunction(Camellia::TFunctionPtr<double> function) {};
     /** \brief values */
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
+    void values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache);
 };
 
 /** \brief Function for taking field at each point
  */
-class GtrZeroFunction : public Function {
+class GtrZeroFunction : public Camellia::SimpleFunction<double> {
   private:
-    FunctionPtr _function;
+    Camellia::TFunctionPtr<double> _function;
   public:
     /** \brief Actual function */
-    GtrZeroFunction(FunctionPtr function) {};
+    GtrZeroFunction(Camellia::TFunctionPtr<double> function) {};
     /** \brief values */
-    void values(Intrepid::FieldContainer<double> &values, BasisCachePtr basisCache);
+    void values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache);
 };
 
 /** \brief Calculate distance to plate
  */
-class distanceToPlate : public SimpleFunction<double>
+class distanceToPlate : public Camellia::SimpleFunction<double>
 {
   double _plateX0; //x value of leading edge of the plate
   double _plateY; //y value of plate (assumes a horziontal plate) 
@@ -102,8 +102,7 @@ class distanceToPlate : public SimpleFunction<double>
 
 /** \brief Calculate yvalue
  */
-class yValue : public SimpleFunction<double>
-{
+class yValue : public Camellia::SimpleFunction<double> {
 public:
   /** \brief values */
   double value(double x, double y);
