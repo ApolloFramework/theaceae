@@ -167,7 +167,7 @@ int main( int argc, char *argv[] )
     tmesh->registerSolution(tprevTime);
   }
 
-  FunctionPtr sourceFactor = Teuchos::rcp(new RampFunction(sourceStep0,sourceStepf));
+  FunctionPtr sourceFactor = Teuchos::rcp(new RampFunction<double>(sourceStep0,sourceStepf));
 
   /***************** Define constant pointers *********************************/
  
@@ -259,9 +259,9 @@ int main( int argc, char *argv[] )
   FunctionPtr saDiff;
 
   FunctionPtr dWall = Teuchos::rcp(new  distanceToPlate(0.0, 0.0));
-  FunctionPtr dWallSqr =  Teuchos::rcp(new PowFunction( dWall, 2.0));
+  FunctionPtr dWallSqr = Teuchos::rcp(new PowFunction<double>( dWall, 2.0));
   FunctionPtr kappaDSqr = 
-    Teuchos::rcp(new PowFunction(saKappa * dWall, 2.0));
+    Teuchos::rcp(new PowFunction<double>(saKappa * dWall, 2.0));
   FunctionPtr smallNumPtr = Function::constant(smallNum);
 
   FunctionPtr rlim = Function::constant(saRLim);
@@ -281,18 +281,18 @@ int main( int argc, char *argv[] )
 
   if (useTurbModel)
   {
-    chiPrevSqr = Teuchos::rcp(new PowFunction(chiPrev,2.));
-    chiPrevCube = Teuchos::rcp(new PowFunction(chiPrev,3.));
-    chiPrevPos = Teuchos::rcp(new GtrZeroFunction(chiPrev));
+    chiPrevSqr = Teuchos::rcp(new PowFunction<double>(chiPrev,2.));
+    chiPrevCube = Teuchos::rcp(new PowFunction<double>(chiPrev,3.));
+    chiPrevPos = Teuchos::rcp(new GtrZeroFunction<double>(chiPrev));
     fv1Prev = chiPrevCube/(chiPrevCube+saCV1Cube);
     fv2Prev = one - chiPrev/(one + chiPrev * fv1Prev);
 
-    ft2Prev = Teuchos::rcp(new EFunction(-saCT4 * chiPrevSqr) );
+    ft2Prev = Teuchos::rcp(new EFunction<double>(-saCT4 * chiPrevSqr) );
     ft2Prev = saCT3 *  ft2Prev;
 
-    sPrev = Teuchos::rcp(new AbsFunction(2.0 * Re * omegaPrev));   
+    sPrev = Teuchos::rcp(new AbsFunction<double>(2.0 * Re * omegaPrev));   
     sBarPrev = invRe * chiPrev * fv2Prev / (kappaDSqr + smallNumPtr);
-    sBarGtr = Teuchos::rcp(new GtrZeroFunction(sBarPrev + saCV2 * sPrev));
+    sBarGtr = Teuchos::rcp(new GtrZeroFunction<double>(sBarPrev + saCV2 * sPrev));
 
     if (useSBar)
     {
@@ -307,11 +307,11 @@ int main( int argc, char *argv[] )
     }
 
     saR = Function::min(invRe * chiPrev / (sTildePrev * kappaDSqr + smallNumPtr), rlim);
-    saR6 = Teuchos::rcp(new PowFunction(saR, 6) );
+    saR6 = Teuchos::rcp(new PowFunction<double>(saR, 6) );
     saG = saR + saCW2 * (saR6 - saR);
     saCW3Six = Function::constant(pow(saCW3, 6.0) );
-    saG6 = Teuchos::rcp(new PowFunction(saG, 6) );
-    fwFac = Teuchos::rcp(new PowFunction( (one + saCW3Six) / (saG6 + saCW3Six), 1. / 6.0) );
+    saG6 = Teuchos::rcp(new PowFunction<double>(saG, 6) );
+    fwFac = Teuchos::rcp(new PowFunction<double>( (one + saCW3Six) / (saG6 + saCW3Six), 1. / 6.0) );
     fwPrev = saG * fwFac;
    
     if (useSANeg)
@@ -536,7 +536,7 @@ int main( int argc, char *argv[] )
 
 
 
-  FunctionPtr invReSqrt =  Teuchos::rcp(new PowFunction( invRe, 0.5));
+  FunctionPtr invReSqrt =  Teuchos::rcp(new PowFunction<double>( invRe, 0.5));
 
   FunctionPtr vecWork1 = Function::vectorize(one, -one);
   FunctionPtr vecWork2 = Function::vectorize(3.0*one, one);
@@ -760,8 +760,8 @@ int main( int argc, char *argv[] )
     {
       cout << "Here  B a" << endl;
       TFunctionPtr<double> normY = 1.0/yDim * saYValue;
-      TFunctionPtr<double> normY2 =  Teuchos::rcp(new PowFunction(normY , 2.0));
-      TFunctionPtr<double> normY3 =  Teuchos::rcp(new PowFunction(normY , 3.0));
+      TFunctionPtr<double> normY2 =  new PowFunction<double>(normY , 2.0);
+      TFunctionPtr<double> normY3 =  new PowFunction<double>(normY , 3.0);
       TFunctionPtr<double> chi0 = chiFsBc * (-2.0 * normY3 + 3.0 * normY2);
       TFunctionPtr<double> psi0y = 6.0*chiFsBc/(saSigma*yDim) * invRe * (one + chi0)*(normY-normY2); 
       //      chiInitial = chiFsBc/yDim * saYValue;
@@ -844,7 +844,7 @@ int main( int argc, char *argv[] )
   int tstep = 0;
   for (step = 0; step <= maxsteps; step++)
   {
-    ((RampFunction*)sourceFactor.get())->UpdateStep(step);
+    ((RampFunction<double>*)sourceFactor.get())->UpdateStep(step);
     soln->solve();
     l2Incr = sqrt(l2Sqr->integrate(mesh));
 

@@ -13,23 +13,25 @@ using namespace std;
 using namespace Theaceae;
 
 /********************* Helper Functions ************************/
-RampFunction::RampFunction( int t0, int tf ) : _t0(t0), _tf(tf) {
-  RampFunction::_dStep = 1.0/(1.0 *(RampFunction::_tf - RampFunction::_t0) );
-  if (RampFunction::_tf < 0)
+template <typename Scalar>
+RampFunction<Scalar>::RampFunction( int t0, int tf ) : _t0(t0), _tf(tf) {
+  _dStep = 1.0/(1.0 *(_tf - _t0) );
+  if (_tf < 0)
   {
-    RampFunction::_value = 1.0;
+    _value = 1.0;
   }
-  else if (RampFunction::_t0 < 0)
+  else if (_t0 < 0)
   {
-    RampFunction::_value = -RampFunction::_dStep * RampFunction::_t0;
+    _value = -_dStep * _t0;
   }
   else
   {
-    RampFunction::_value = 0.0;
+    _value = 0.0;
   }
 }
 
-void RampFunction::UpdateStep(int step) {
+template <typename Scalar>
+void RampFunction<Scalar>::UpdateStep(int step) {
   if (step >= RampFunction::_tf)
   {
     RampFunction::_value = 1.0;
@@ -44,11 +46,12 @@ void RampFunction::UpdateStep(int step) {
   }
   cout << "Step: "<< step << " Value: " << _value << endl;
 }
-void RampFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
+
+template <typename Scalar>
+void RampFunction<Scalar>::values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
-  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
   for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
     for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
       values(cellIndex, ptIndex) = RampFunction::_value;
@@ -57,7 +60,8 @@ void RampFunction::values(Intrepid::FieldContainer<double> &values, Camellia::Ba
 }
 
 
-void PowFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
+template <typename Scalar>
+void PowFunction<Scalar>::values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
@@ -71,13 +75,13 @@ void PowFunction::values(Intrepid::FieldContainer<double> &values, Camellia::Bas
   }
 }
 
-void AbsFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
+template <typename Scalar>
+void AbsFunction<Scalar>::values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
   _function->values(values, basisCache);
 
-  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
   for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
     for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
       values(cellIndex, ptIndex) = abs(values(cellIndex, ptIndex));
@@ -85,13 +89,14 @@ void AbsFunction::values(Intrepid::FieldContainer<double> &values, Camellia::Bas
   }
 }
 
-void EFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
+template <typename Scalar>
+void EFunction<Scalar>::values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
   EFunction::_function->values(values, basisCache);
 
-  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  const Intrepid::FieldContainer<Scalar> *points = &(basisCache->getPhysicalCubaturePoints());
   for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
     for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
       values(cellIndex, ptIndex) = exp(values(cellIndex, ptIndex));
@@ -99,13 +104,14 @@ void EFunction::values(Intrepid::FieldContainer<double> &values, Camellia::Basis
   }
 }
 
-void GtrZeroFunction::values(Intrepid::FieldContainer<double> &values, Camellia::BasisCachePtr basisCache) {
+template <typename Scalar>
+void GtrZeroFunction<Scalar>::values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache) {
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
   GtrZeroFunction::_function->values(values, basisCache);
 
-  const Intrepid::FieldContainer<double> *points = &(basisCache->getPhysicalCubaturePoints());
+  const Intrepid::FieldContainer<Scalar> *points = &(basisCache->getPhysicalCubaturePoints());
   for (int cellIndex=0; cellIndex<numCells; cellIndex++) {
     for (int ptIndex=0; ptIndex<numPoints; ptIndex++) {
   if (values(cellIndex, ptIndex)>0)
@@ -120,7 +126,7 @@ void GtrZeroFunction::values(Intrepid::FieldContainer<double> &values, Camellia:
   }
 }
 
-
+/********************* More Specific Functions ************************/
 double distanceToPlate::value(double x, double y)
 {
   if (x < _plateX0)
@@ -137,4 +143,13 @@ double distanceToPlate::value(double x, double y)
 double yValue::value(double x, double y)
 {
   return (y);
+}
+
+namespace Theaceae
+{
+template class RampFunction<double>;
+template class PowFunction<double>;
+template class AbsFunction<double>;
+template class EFunction<double>;
+template class GtrZeroFunction<double>;
 }
