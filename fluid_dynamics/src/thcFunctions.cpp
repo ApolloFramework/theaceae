@@ -65,7 +65,6 @@ void PowFunction<Scalar>::values(Intrepid::FieldContainer<Scalar> &values, Camel
   int numCells = values.dimension(0);
   int numPoints = values.dimension(1);
 
-  cout << _function;
   _function->values(values, basisCache);
 
   for (int cellIndex=0; cellIndex<numCells; cellIndex++) {

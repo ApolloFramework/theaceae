@@ -40,7 +40,9 @@ int main( int argc, char *argv[] )
   MeshTopologyPtr meshTopo = thcCreateRectMesh(meshPL);
 
   /******************* Define variables for calculation ***********************/
+  // Fluid advance
   VarFactoryPtr vf = VarFactory::varFactory();
+  // Turbulence advance
   VarFactoryPtr tvf;
 
   // continuity equation (div v = 0)
@@ -755,13 +757,11 @@ int main( int argc, char *argv[] )
     TFunctionPtr<double> chiInitial; 
     TFunctionPtr<double> psiInitial;  
 
-    cout << "Here  A" << endl;
     if (useTurbModel)
     {
-      cout << "Here  B a" << endl;
       TFunctionPtr<double> normY = 1.0/yDim * saYValue;
-      TFunctionPtr<double> normY2 =  new PowFunction<double>(normY , 2.0);
-      TFunctionPtr<double> normY3 =  new PowFunction<double>(normY , 3.0);
+	TFunctionPtr<double> normY2 =  Teuchos::rcp(new PowFunction<double>(normY , 2.0));
+	TFunctionPtr<double> normY3 =  Teuchos::rcp(new PowFunction<double>(normY , 3.0));
       TFunctionPtr<double> chi0 = chiFsBc * (-2.0 * normY3 + 3.0 * normY2);
       TFunctionPtr<double> psi0y = 6.0*chiFsBc/(saSigma*yDim) * invRe * (one + chi0)*(normY-normY2); 
       //      chiInitial = chiFsBc/yDim * saYValue;
@@ -771,41 +771,31 @@ int main( int argc, char *argv[] )
       //     chiInitial = Function::constant(chiFsBc);
       //     psiInitial =  Function::vectorize(zero,zero); 
 
-      cout << "Here  B c" << endl;
       if(splitTurbAdv)
       {
-        cout << "Here  B d" << endl;
         tinitialGuess[chi->ID()] = chiInitial;
-        cout << "Here  B da" << endl;
         tinitialGuess[psi->ID()] = psiInitial;
-        cout << "Here  B db" << solutionOrdinal << endl;
         tprevTime->projectOntoMesh(tinitialGuess, solutionOrdinal);
-        cout << "Here  B e" << endl;
       }
       else
       {
-        cout << "Here  C a" << endl;
         initialGuess[chi->ID()] = chiInitial;
         initialGuess[psi->ID()] = psiInitial;
-        cout << "Here  C b" << endl;
       }
     }
 
-    cout << "Here  C c" << endl;
     prevTime->projectOntoMesh(initialGuess, solutionOrdinal);
   }
   else
   {
-    cout << "Here  D a" << endl;
     prevTime->loadFromHDF5(readFileName+".soln");
     if(useTurbModel&&splitTurbAdv)
 	{
-    cout << "Here  D b" << endl;
 	  tprevTime->loadFromHDF5(readFileName+".tsoln");
 	}
   }
 
-  cout << "Here" << endl;
+  cout << "After initialization" << endl;
 
   /******************* Solve the Navier Stokes Eqn ***************************/
   string filename = dumpPL.get<string>("filename");

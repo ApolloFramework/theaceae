@@ -45,7 +45,10 @@ class PowFunction : public Camellia::SimpleFunction<Scalar> {
     double _n;
   public:
     /** \brief Actual function */
-    PowFunction(Camellia::TFunctionPtr<Scalar> function, double n) {};
+    PowFunction(Camellia::TFunctionPtr<Scalar> function, double n) {
+      _function = function;
+      _n = n;
+    };
     /** \brief values */
     void values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache);
 };
@@ -58,7 +61,9 @@ class AbsFunction : public Camellia::SimpleFunction<Scalar> {
     Camellia::TFunctionPtr<Scalar> _function;
   public:
     /** \brief Actual function */
-    AbsFunction(Camellia::TFunctionPtr<Scalar> function) {};
+    AbsFunction(Camellia::TFunctionPtr<Scalar> function)  {
+      _function = function;
+    };
     /** \brief values */
     void values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache);
 };
@@ -71,7 +76,9 @@ class EFunction : public Camellia::SimpleFunction<Scalar> {
     Camellia::TFunctionPtr<Scalar> _function;
   public:
     /** \brief Actual function */
-    EFunction(Camellia::TFunctionPtr<Scalar> function) {};
+    EFunction(Camellia::TFunctionPtr<Scalar> function) {
+      _function = function;
+    };
     /** \brief values */
     void values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache);
 };
@@ -84,7 +91,9 @@ class GtrZeroFunction : public Camellia::SimpleFunction<Scalar> {
     Camellia::TFunctionPtr<Scalar> _function;
   public:
     /** \brief Actual function */
-    GtrZeroFunction(Camellia::TFunctionPtr<Scalar> function) {};
+    GtrZeroFunction(Camellia::TFunctionPtr<Scalar> function) {
+      _function = function;
+    };
     /** \brief values */
     void values(Intrepid::FieldContainer<Scalar> &values, Camellia::BasisCachePtr basisCache);
 };
@@ -97,8 +106,7 @@ class distanceToPlate : public Camellia::SimpleFunction<double>
   double _plateY; //y value of plate (assumes a horziontal plate) 
   public:
     /** \brief Actual function */
-    distanceToPlate(double plateX0, double plateY)
-    {
+    distanceToPlate(double plateX0, double plateY) {
       _plateX0=plateX0;
       _plateY =plateY;
     };
